@@ -31,6 +31,23 @@ function getItems(req, res) {
   res.send(finalObj);
 }
 
+function sortItems(req, res) {
+  req.body.sortItemReq = JSON.parse(req.body.sortItemReq);
+  console.log('req.body', req.body);
+  const minLimit = parseInt(req.body.sortItemReq.minLimit);
+  const maxLimit = parseInt(req.body.sortItemReq.maxLimit);
+  let sortedData = data.dummyData.filter((item, index) => {
+    if (item.price > minLimit && item.price < maxLimit) {
+      return item;
+    }
+  });
+  const sortedResultObj = {
+    sorted: true,
+    data: sortedData
+  };
+  res.send(sortedResultObj);
+}
+
 function filterItems(req, res) {
   const productData = data.dummyData;
   // console.log('req.body', req.body, req.body.filterReq);
@@ -131,11 +148,12 @@ function filterItems(req, res) {
     finalData = filterpass2ForBrands;
   }
   items.data = finalData;
-  console.log('final items data in backend', items, finalData);
+  console.log('final items data in backend', finalData);
   res.send(finalData);
 }
 
 module.exports = {
   getItems,
-  filterItems
+  filterItems,
+  sortItems
 };

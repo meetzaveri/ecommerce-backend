@@ -12,6 +12,7 @@ app.use(bodyParser.json());
 
 app.get('/', controller.getItems);
 app.post('/filter', controller.filterItems);
+app.post('/sort', controller.sortItems);
 
 app.listen(port, () => {
   console.log('We are live on port ', port);
