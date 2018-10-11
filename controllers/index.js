@@ -1,5 +1,6 @@
 const data = require('../utils');
 const utils = require('../utils/utils');
+const _ = require('lodash');
 
 // dedup utility
 function dedup(finalData) {
@@ -46,6 +47,26 @@ function sortItems(req, res) {
     data: sortedData
   };
   res.send(sortedResultObj);
+}
+
+// This controller is not used anywhere but kept as for reference
+function sortWithPrice(req, res) {
+  const sortFlag = parseInt(req.query.sortFlag);
+  const paginationFlag = req.query.pagination;
+  const sortedArr = _.sortBy(data.dummyData, i => i.price);
+  let finalDataToPaginate = null;
+  if (sortFlag === 1) {
+    finalDataToPaginate = sortedArr;
+  } else if (sortFlag === 2) {
+    finalDataToPaginate = sortedArr.reverse();
+  }
+  const paginationData = utils.paginationLimit(
+    finalDataToPaginate,
+    10,
+    paginationFlag
+  );
+  const finalObj = dedup(paginationData);
+  res.send(finalObj);
 }
 
 function filterItems(req, res) {
@@ -154,6 +175,7 @@ function filterItems(req, res) {
 
 module.exports = {
   getItems,
+  sortWithPrice,
   filterItems,
   sortItems
 };
