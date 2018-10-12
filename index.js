@@ -11,6 +11,7 @@ const port = process.env.PORT || 8000;
 app.use(bodyParser.json());
 
 app.get('/', controller.getItems);
+app.get('/sortprice', controller.sortWithPrice);
 app.post('/filter', controller.filterItems);
 app.post('/sort', controller.sortItems);
 
