@@ -8,13 +8,32 @@ function dedup(finalData) {
   let colorObj = {};
 
   data.dummyData.forEach((item, index) => {
-    brandObj[item.brand] = item.brand;
-    colorObj[item.primaryColor] = item.primaryColor;
+    brandObj[item.brand] = {
+      ...brandObj[item.brand],
+      [item.productId]: 'in slot'
+    };
+
+    colorObj[item.primaryColor] = {
+      ...colorObj[item.primaryColor],
+      [item.productId]: 'in slot'
+    };
   });
 
+  Object.keys(brandObj).forEach((item, index) => {
+    brandObj[item] = Object.keys(brandObj[item]).length;
+  });
+
+  // console.log('brandObj', brandObj);
+
+  Object.keys(colorObj).forEach((item, index) => {
+    colorObj[item] = Object.keys(colorObj[item]).length;
+  });
+
+  // console.log('colorObj', colorObj);
+
   let finalObj = {
-    brands: Object.keys(brandObj),
-    colors: Object.keys(colorObj),
+    brands: brandObj,
+    colors: colorObj,
     data: finalData
   };
 
@@ -34,11 +53,11 @@ function getItems(req, res) {
 
 function sortItems(req, res) {
   req.body.sortItemReq = JSON.parse(req.body.sortItemReq);
-  console.log('req.body', req.body);
+  // console.log('req.body', req.body);
   const minLimit = parseInt(req.body.sortItemReq.minLimit);
   const maxLimit = parseInt(req.body.sortItemReq.maxLimit);
   let sortedData = data.dummyData.filter((item, index) => {
-    if (item.price > minLimit && item.price < maxLimit) {
+    if (item.price >= minLimit && item.price <= maxLimit) {
       return item;
     }
   });
@@ -51,7 +70,7 @@ function sortItems(req, res) {
 
 // This controller is not used anywhere but kept as for reference
 function sortWithPrice(req, res) {
-  const sortFlag = parseInt(req.query.sortFlag);
+  const sortFlag = sortFlag ? parseInt(req.query.sortFlag) : null;
   const paginationFlag = req.query.pagination;
   const sortedArr = _.sortBy(data.dummyData, i => i.price);
   let finalDataToPaginate = null;
@@ -70,8 +89,12 @@ function sortWithPrice(req, res) {
 }
 
 function filterItems(req, res) {
+  const sortFlag =
+    req.body.sortPriceValue !== undefined
+      ? parseInt(req.body.sortPriceValue)
+      : null;
+  console.log('sortPriceValue', sortFlag);
   const productData = data.dummyData;
-  // console.log('req.body', req.body, req.body.filterReq);
   let rawFilterProductReqArr = JSON.parse(req.body.filterReq);
   const filterProductRequestArr = {
     primaryColor:
@@ -168,7 +191,20 @@ function filterItems(req, res) {
     );
     finalData = filterpass2ForBrands;
   }
-  items.data = finalData;
+
+  // Sorting if sortFlag is passed in params
+  let finalDataToFilter = null;
+  if (sortFlag) {
+    console.log('Sortflag is enabled', sortFlag);
+    const sortedArr = _.sortBy(finalData, i => i.price);
+    if (sortFlag == 1) {
+      finalDataToFilter = sortedArr;
+    } else if (sortFlag == 2) {
+      finalDataToFilter = sortedArr.reverse();
+    }
+  }
+
+  finalData = finalDataToFilter ? finalDataToFilter : finalData;
   console.log('final items data in backend', finalData);
   res.send(finalData);
 }
